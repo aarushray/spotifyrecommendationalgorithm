@@ -42,20 +42,18 @@ def normalise_data(df, list1):
     return df
 
 
-def get_recommendations(df, id):
+def get_recommendations_cos(df, id):
     ls = []
     original = np.array(get_features(id).values)  # O(N)
     c = 0
     distinct_songs = {"null"}
 
     for i in df.itertuples():
-        # print(i[0], i[1], i[2], i[3])
 
         if i.track_id == id:
             continue
 
         rec = [i.danceability, i.energy, i.valence, i.acousticness, i.speechiness, i.instrumentalness, i.liveness, i.tempo]
-        # df["vectors"] = [i[9], i[10]]
 
         if (np.linalg.norm(original) == 0 or np.linalg.norm(rec) == 0):
             continue
@@ -65,7 +63,7 @@ def get_recommendations(df, id):
         if i.track_name in distinct_songs:
             continue
         else:
-            ls.append((cos_sim, (i.track_name, i.artists), cos_sim))
+            ls.append((cos_sim, (i.track_name, i.artists)))
             distinct_songs.add(i.track_name)
 
     ls.sort(reverse = True)
@@ -73,7 +71,76 @@ def get_recommendations(df, id):
     return ls[0:5]
 
 
+def get_recommendations_euclid(df, id, track_name, features_list):
 
+    original = np.array(get_features(id).values)
+
+    features_matrix = np.array(df[features_list].values)
+
+    result = np.array(features_matrix - original)
+
+# Force the data type to float64 before computing the norm
+
+    euclid_dist = np.linalg.norm(result.astype(np.float64), axis = 1)
+
+    df["results"] = euclid_dist
+
+    df = df.sort_values(by="results", ascending=True)
+
+    ans = set()
+    # print(len(ans))
+
+    for i in df.itertuples():
+        if (i.track_id == id or i.track_name == track_name):
+            continue
+        else:
+            ans.add((i.track_name, i.artists))
+        
+        if (len(ans) == 5):
+            break
+    
+    return ans
+
+    # for i in collection.itertuples():
+    #     print(i)
+
+    # for j in collection:
+        # print(j[1])
+
+    # result = []
+
+    # c = 0
+
+    # for i in features_matrix:
+    #     k = np.linalg.norm(np.subtract(i, original))
+    #     result.append(k)
+
+    # df["results"] = result
+
+    # ans = []
+
+    # for i in df.itertuples():
+    #     ans.append((i.results, (i.track_name, i.artists)))
+
+    # ans.sort(reverse = True)
+    # while (ans[-1][0] == 0):
+    #     ans.pop()
+
+    # final = [ans[-1]]
+    # last_track = ans[-1][1][0]
+
+    # while (len(final)<5):
+    #     if (ans[-1][1][0] != last_track):
+    #         final.append(ans[-1])
+    #         last_track = ans[-1][1][0]
+
+
+
+    # for i in features_matrix:
+    #     i -= original
+
+
+    # df["euclid_dist"] = np.linalg.norm(df["recommendation_vectors"] - original)
 
         
 
@@ -87,6 +154,7 @@ df = pd.read_csv("archive/dataset.csv")
        'instrumentalness', 'liveness', 'valence', 'tempo', 'time_signature',
        'track_genre'],
 '''
+
 # c=0
 # for i in df:
 #     print(i)
@@ -107,18 +175,20 @@ lis = ["danceability",
 df = normalise_data(df, lis)
 
 
-artists = "Radiohead"
-track_name = "Creep"
+artists = "Imagine Dragons"
+track_name = "Demons"
 
 id = get_id(artists, track_name)
 
 track_features = get_features(id)
 
+ans = get_recommendations_euclid(df, id, track_name, lis)
 
-ls = get_recommendations(df, id)
+for i in ans:
+    print(i[0], "by", i[1])
 
-for i in ls:
-    print(i[1][0], "by", i[1][1], "\nsimilarity:", i[2])
+# for i in ls:
+#     print(i[1][0], "by", i[1][1])
 
 # for i in ls:
 #     id = i[1]

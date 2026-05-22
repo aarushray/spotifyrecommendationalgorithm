@@ -1,0 +1,15 @@
+
+
+
+
+for i in df.itertuples():
+    ### i is just a series. basically a list.
+    ### use i[1] or i.track_id
+
+
+df["danceability"] selects the whole column
+df["danceability"] = 1.1*df["danceability"] is fine
+
+df[df["track_name"] == "Radiohead" and df["track_id"] == "Creep"].iloc[0]   returns a row as a dataframe
+
+df[["danceability", "energy"]]
