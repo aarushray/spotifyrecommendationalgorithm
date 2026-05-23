@@ -13,3 +13,11 @@ df["danceability"] = 1.1*df["danceability"] is fine
 df[df["track_name"] == "Radiohead" and df["track_id"] == "Creep"].iloc[0]   returns a row as a dataframe
 
 df[["danceability", "energy"]]
+
+[np.float64(0.1634517766497462) np.float64(0.031000000000000028)
+  np.float64(0.614070351758794) ... np.float64(-0.00013199000000000002)
+  np.float64(0.22899999999999998) np.float64(-0.016135792120704096)]
+
+  [np.float64(0.1634517766497462) np.float64(0.031000000000000028)
+  np.float64(0.614070351758794) ... np.float64(-0.00013199000000000002)
+  np.float64(0.22899999999999998) np.float64(-0.016135792120704096)]
