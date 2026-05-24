@@ -79,22 +79,15 @@ def get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, 
 
     temp_df["results"] = euclid_dist
 
-    temp_df = temp_df.sort_values(by="results", ascending=True)
-
     ans = set()
     # print(len(ans))
 
-    for i in temp_df.itertuples():
-        if (i.track_id == id or i.track_name == track_name):
-            continue
-        else:
-            ans.add(i[0])
-        
-        if (len(ans) == 5):
-            break
+    top = np.argpartition(euclid_dist, 5)[:5]
 
+    row_numbers = temp_df.iloc[top]["Unnamed: 0"]
 
-    return ans
+    return row_numbers
+
 
 
 df = pd.read_csv("archive/dataset.csv")
@@ -124,7 +117,8 @@ track_features = get_features(id).values
 row = df[df["track_id"] == id].iloc[0]
 row_num = row["Unnamed: 0"]
 track_genre = row["track_genre"]
-temp_df = df[df["track_genre"] == track_genre]
+temp_df = df[(df["track_genre"] == track_genre) & (df["track_name"] != track_name)]
+temp_df = temp_df.drop_duplicates(subset="track_name")
 
 
 df["results"] = [0 for i in range(len(df.index))]
@@ -140,8 +134,9 @@ result = np.array(features_matrix - original)
 
 # print(timeit.repeat(lambda: df.iloc[2000], repeat = 3, number = 10000))
 
+ranks = np.zeros(len(df), dtype=np.int32)
 
-for j in range(1):
+for j in range(1000):
 
     weights = np.random.uniform(0, 3, size = 8)
 
@@ -149,13 +144,19 @@ for j in range(1):
     ans = get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, weights)
 
 
-    for i in ans:
-        df.loc[i, "ranks"] += 1
+    ranks[ans] += 1
 
-df = df.sort_values(by="ranks", ascending=False)
+top = np.argpartition(ranks, 5)[-5:]
+
+for i in top:
+    recsong = df.iloc[i]["track_name"]
+    recartist = df.iloc[i]["artists"]
+    print(recsong, "by", recartist)
+
+# df = df.sort_values(by="ranks", ascending=False)
 
 # print(df.head()[["track_name", "artists"]])
-print(df)
+# print(df)
 
 
 
