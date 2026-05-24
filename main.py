@@ -71,26 +71,9 @@ def get_recommendations_cos(df, id):
     return ls[0:5]
 
 
-def get_recommendations_euclid(df, id, track_name, features_list, weights):
-
-    genre = df[df["track_id"] == id].iloc[0]
-    genre = genre["track_genre"]
-
-    temp_df = df[df["track_genre"] == genre]
-
-    original = np.array(get_features(id).values)
-
-    features_matrix = np.array(temp_df[features_list].values)
-
-    result = np.array(features_matrix - original)
+def get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, weights):
     
-    # result = result * weights
-    
-    for i in result:
-        for j in range(len(i)):
-            i[j] *= weights[j]
-
-# Force the data type to float64 before computing the norm
+    result = np.multiply(result, weights)
 
     euclid_dist = np.linalg.norm(result.astype(np.float64), axis = 1)
 
@@ -105,11 +88,12 @@ def get_recommendations_euclid(df, id, track_name, features_list, weights):
         if (i.track_id == id or i.track_name == track_name):
             continue
         else:
-            ans.add((i.track_name, i.artists))
+            ans.add(i[0])
         
         if (len(ans) == 5):
             break
-    
+
+
     return ans
 
 
@@ -135,13 +119,48 @@ track_name = "Creep"
 
 id = get_id(artists, track_name)
 
-track_features = get_features(id)
+track_features = get_features(id).values
 
-weights = [1, 2, 1, 2, 1, 1, 0.5, 1]
+row = df[df["track_id"] == id].iloc[0]
+row_num = row["Unnamed: 0"]
+track_genre = row["track_genre"]
+temp_df = df[df["track_genre"] == track_genre]
 
-ans = get_recommendations_euclid(df, id, track_name, lis, weights)
 
-for i in ans:
-    print(i[0], "by", i[1])
+df["results"] = [0 for i in range(len(df.index))]
+df["ranks"] = [0 for i in range(len(df.index))]
 
+original = np.array(track_features)
+
+features_matrix = np.array(temp_df[lis].values)
+
+result = np.array(features_matrix - original)
+
+# import timeit
+
+# print(timeit.repeat(lambda: df.iloc[2000], repeat = 3, number = 10000))
+
+
+for j in range(1):
+
+    weights = np.random.uniform(0, 3, size = 8)
+
+
+    ans = get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, weights)
+
+
+    for i in ans:
+        df.loc[i, "ranks"] += 1
+
+df = df.sort_values(by="ranks", ascending=False)
+
+# print(df.head()[["track_name", "artists"]])
+print(df)
+
+
+
+import timeit
+# print(timeit.repeat(lambda: exec(lamb), repeat = 1, number = 100))
+
+### output: [0.00025269994512200356, 0.0002549999626353383, 0.00024229998234659433]
 
