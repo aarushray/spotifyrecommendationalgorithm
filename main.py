@@ -71,26 +71,22 @@ def get_recommendations_cos(df, id):
     return ls[0:5]
 
 
-def get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, weights):
+def get_recommendations_euclid_genre_filtering(temp_df, result, weights):
     
     result = np.multiply(result, weights)
 
     euclid_dist = np.linalg.norm(result.astype(np.float64), axis = 1)
 
-    temp_df["results"] = euclid_dist
-
-    ans = set()
-    # print(len(ans))
-
     top = np.argpartition(euclid_dist, 5)[:5]
+
+    top = top[np.argsort(euclid_dist[top])]  # sort just the 5
 
     row_numbers = temp_df.iloc[top]["Unnamed: 0"]
 
     return row_numbers
 
 
-
-df = pd.read_csv("archive/dataset.csv")
+df = pd.read_csv("history-of-rock-spotify - Copy.csv")
 
 lis = ["danceability",
               "energy", 
@@ -110,38 +106,28 @@ track_name = ("Enter the name of the track:")
 artists = "Radiohead"
 track_name = "Creep"
 
+
 id = get_id(artists, track_name)
 
 track_features = get_features(id).values
 
 row = df[df["track_id"] == id].iloc[0]
-row_num = row["Unnamed: 0"]
 track_genre = row["track_genre"]
 temp_df = df[(df["track_genre"] == track_genre) & (df["track_name"] != track_name)]
 temp_df = temp_df.drop_duplicates(subset="track_name")
 
-
-df["results"] = [0 for i in range(len(df.index))]
-df["ranks"] = [0 for i in range(len(df.index))]
-
 original = np.array(track_features)
-
 features_matrix = np.array(temp_df[lis].values)
-
 result = np.array(features_matrix - original)
-
-# import timeit
-
-# print(timeit.repeat(lambda: df.iloc[2000], repeat = 3, number = 10000))
-
 ranks = np.zeros(len(df), dtype=np.int32)
 
 for j in range(1000):
 
     weights = np.random.uniform(0, 3, size = 8)
 
+    weights /= weights.sum()
 
-    ans = get_recommendations_euclid_genre_filtering(temp_df, id, track_name, result, weights)
+    ans = get_recommendations_euclid_genre_filtering(temp_df, result, weights)
 
 
     ranks[ans] += 1
@@ -153,15 +139,4 @@ for i in top:
     recartist = df.iloc[i]["artists"]
     print(recsong, "by", recartist)
 
-# df = df.sort_values(by="ranks", ascending=False)
-
-# print(df.head()[["track_name", "artists"]])
-# print(df)
-
-
-
-import timeit
-# print(timeit.repeat(lambda: exec(lamb), repeat = 1, number = 100))
-
-### output: [0.00025269994512200356, 0.0002549999626353383, 0.00024229998234659433]
-
+    
