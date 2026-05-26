@@ -1,4 +1,4 @@
-index,name,artist,release_date,length,popularity,danceability,acousticness,danceability,energy,instrumentalness,key,liveness,loudness,speechiness,tempo,time_signature,valence
+index,track_name,artists,release_date,length,popularity,danceability,acousticness,danceability,energy,instrumentalness,key,liveness,loudness,speechiness,tempo,time_signature,valence
 0,Smells Like Teen Spirit,Nirvana,1991,5.032,74,0.502,2.55E-05,0.502,0.912,0.000173,1,0.106,-4.556,0.0564,116.761,4,0.72
 1,Stairway to Heaven - Remaster,Led Zeppelin,1971,8.047166667,78,0.338,0.58,0.338,0.34,0.0032,9,0.116,-12.049,0.0339,82.433,4,0.197
 2,Bohemian Rhapsody - Remastered 2011,Queen,1975,5.905333333,74,0.392,0.288,0.392,0.402,0,0,0.243,-9.961,0.0536,143.883,4,0.228
